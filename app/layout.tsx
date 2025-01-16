@@ -1,5 +1,7 @@
 import "./globals.css";
-import ClientLayout from './client-layout';
+import ClientLayout from '@/app/client-layout';
+import { AdminProvider } from './contexts/admin-context';
+import { MenuProvider } from './contexts/menu-context';
 
 export const metadata = {
   title: "Restaurant Management System",
@@ -14,9 +16,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <AdminProvider>
+          <MenuProvider>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </MenuProvider>
+        </AdminProvider>
       </body>
     </html>
   );

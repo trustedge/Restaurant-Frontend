@@ -1,28 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Menu, Users, Settings, Calendar, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
+import { useAdmin } from './contexts/admin-context';
 
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Load admin state from localStorage on client-side only
-  useEffect(() => {
-    const saved = localStorage.getItem('isAdmin');
-    if (saved !== null) {
-      setIsAdmin(JSON.parse(saved));
-    }
-  }, []);
-
-  // Save admin state changes to localStorage
-  useEffect(() => {
-    localStorage.setItem('isAdmin', JSON.stringify(isAdmin));
-  }, [isAdmin]);
+  const { isAdmin, setIsAdmin } = useAdmin();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   const navigationItems = [
