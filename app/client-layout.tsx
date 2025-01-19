@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Menu, Users, Settings, Calendar, ClipboardList } from 'lucide-react';
+import { Menu, Users, Settings, Calendar, ClipboardList, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useAdmin } from './contexts/admin-context';
 import { useSettings } from './contexts/settings-context';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function ClientLayout({
   children,
@@ -14,6 +17,9 @@ export default function ClientLayout({
   const { isAdmin, setIsAdmin } = useAdmin();
   const { settings } = useSettings();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const navigationItems = [
     { name: 'Orders', icon: ClipboardList, href: '/orders' },
@@ -57,17 +63,27 @@ export default function ClientLayout({
         </div>
 
         <div className="absolute bottom-4 w-full px-4">
-          <button
-            onClick={() => setIsAdmin(!isAdmin)}
-            className="flex items-center w-full px-4 py-2 text-sm text-amber-900 hover:bg-amber-50 rounded-lg transition-colors duration-200"
-          >
+          <div className="flex justify-start">
+            <button
+              onClick={() => {
+                if (!isAdmin) {
+                  setPasswordDialogOpen(true);
+                  setPassword('');
+                  setError('');
+                } else {
+                  setIsAdmin(false);
+                }
+              }}
+              className="flex items-center px-4 py-2 text-sm text-amber-900 hover:bg-amber-50 rounded-lg transition-colors duration-200"
+            >
             <Users className="h-5 w-5" />
             {isSidebarOpen && (
               <span className="ml-3">
                 {isAdmin ? 'Switch to Employee' : 'Switch to Admin'}
               </span>
             )}
-          </button>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -77,6 +93,58 @@ export default function ClientLayout({
           {children}
         </div>
       </div>
+
+      {/* Password Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enter Admin Password</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="relative">
+              <Input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (password === '1234') {
+                      setIsAdmin(true);
+                      setPasswordDialogOpen(false);
+                    } else {
+                      setError('Incorrect password');
+                    }
+                  }
+                }}
+                className={error ? 'border-red-500' : ''}
+              />
+              <Lock className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (password === '1234') {
+                  setIsAdmin(true);
+                  setPasswordDialogOpen(false);
+                } else {
+                  setError('Incorrect password');
+                }
+              }}
+            >
+              Login
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
