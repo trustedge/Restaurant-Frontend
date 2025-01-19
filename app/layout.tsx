@@ -2,6 +2,7 @@ import "./globals.css";
 import ClientLayout from '@/app/client-layout';
 import { AdminProvider } from './contexts/admin-context';
 import { MenuProvider } from './contexts/menu-context';
+import { SettingsProvider } from './contexts/settings-context';
 
 export const metadata = {
   title: "Restaurant Management System",
@@ -18,9 +19,11 @@ export default function RootLayout({
       <body>
         <AdminProvider>
           <MenuProvider>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
+            <SettingsProvider>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </SettingsProvider>
           </MenuProvider>
         </AdminProvider>
       </body>

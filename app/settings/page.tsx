@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useSettings } from '../contexts/settings-context';
 import { Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,25 +18,7 @@ interface Settings {
 }
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<Settings>({
-    RESTAURANT_NAME: "Terry's American Dining",
-    RESTAURANT_DESCRIPTION: "Terry's American Dining provides amazing American cuisine!",
-    RESTAURANT_ADDRESS: "123 Main St",
-    RESTAURANT_HOURS: "9AM-10PM",
-    RESTAURANT_EMAIL: "testing@johndining.com",
-    RESTAURANT_SUPPORT_PHONE: "+1234567890",
-    PHONE_AGENT_INSTRUCTION: `If a customer wish to reserve table, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:
-1. Ask for their name.
-2. Ask for number of the people who will be dining.
-3. Request their preferred date and time for the appointment.
-4. Confirm all details with the caller, including the date and time of the appointment.
-
-If a customer wishes to place an order:
-1. Please confirm with the details(important fields: Customer name, item name, quantity if not specified will be default to 1) before executing the PlaceOrder function
-2. The customer can only order items in the menu (Only read out the name of the items if asked to do so, and read description, price, calories only if specifically requested)
-3. If customer wants an item that doesn't exist in menu below, you may suggest an menu item that is similar to the customer's item according to the menu description
-4. Customer can also add side notes on each item.`
-  });
+  const { settings, setSettings } = useSettings();
 
   const handleChange = (key: keyof Settings, value: string) => {
     setSettings(prev => ({

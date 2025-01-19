@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Menu, Users, Settings, Calendar, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useAdmin } from './contexts/admin-context';
+import { useSettings } from './contexts/settings-context';
 
 export default function ClientLayout({
   children,
@@ -11,6 +12,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const { isAdmin, setIsAdmin } = useAdmin();
+  const { settings } = useSettings();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   const navigationItems = [
@@ -23,11 +25,14 @@ export default function ClientLayout({
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300`}>
-        <div className="flex h-16 items-center justify-between px-4">
-          <h1 className={`${isSidebarOpen ? 'block' : 'hidden'} text-xl font-bold text-gray-800`}>
-            Restaurant App
-          </h1>
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-amber-50 to-white shadow-lg transition-all duration-300 border-r border-amber-100`}>
+        <div className="flex h-20 items-center justify-between px-4 border-b border-amber-100">
+          <Link href="/" className={`${isSidebarOpen ? 'block' : 'hidden'} group`}>
+            <h1 className="text-xl font-bold text-amber-800 group-hover:text-amber-600 transition-colors">
+              {settings.RESTAURANT_NAME}
+            </h1>
+            <p className="text-xs text-amber-600">{settings.RESTAURANT_HOURS}</p>
+          </Link>
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
             className="p-2 rounded-lg hover:bg-gray-100"
@@ -41,7 +46,7 @@ export default function ClientLayout({
             <Link
               key={item.name}
               href={item.href}
-              className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100"
+              className="flex items-center px-4 py-3 text-amber-900 hover:bg-amber-50 transition-colors duration-200"
             >
               <item.icon className="h-5 w-5" />
               {isSidebarOpen && (
@@ -54,7 +59,7 @@ export default function ClientLayout({
         <div className="absolute bottom-4 w-full px-4">
           <button
             onClick={() => setIsAdmin(!isAdmin)}
-            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
+            className="flex items-center w-full px-4 py-2 text-sm text-amber-900 hover:bg-amber-50 rounded-lg transition-colors duration-200"
           >
             <Users className="h-5 w-5" />
             {isSidebarOpen && (
@@ -67,8 +72,8 @@ export default function ClientLayout({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-6">
+      <div className="flex-1 overflow-auto bg-gradient-to-br from-amber-50/30 to-white">
+        <div className="p-6 max-w-7xl mx-auto">
           {children}
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useMenu } from '@/app/contexts/menu-context';
 import { Plus, Check, X, Search, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,8 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  const [filterStatus, setFilterStatus] = useState('All');
+  const searchParams = useSearchParams();
+  const [filterStatus, setFilterStatus] = useState(searchParams.get('status') || 'All');
   const [searchTerm, setSearchTerm] = useState('');
   const [isMenuDialogOpen, setIsMenuDialogOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -138,6 +140,14 @@ export default function OrdersPage() {
   useEffect(() => {
     setDisplayedItems(40);
   }, [selectedCategory, menuSearchTerm]);
+
+  // Update filter status when URL query parameter changes
+  useEffect(() => {
+    const status = searchParams.get('status');
+    if (status) {
+      setFilterStatus(status);
+    }
+  }, [searchParams]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
