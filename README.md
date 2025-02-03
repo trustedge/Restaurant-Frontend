@@ -96,7 +96,7 @@ http://localhost:3000
 
 ## Development
 
-The application is built with:
+### Tech Stack
 - Next.js
 - React
 - TypeScript
@@ -116,6 +116,89 @@ app/
 └── settings/        # Restaurant settings
 ```
 
+## Production Deployment
+
+### Building for Production
+
+1. Build the application:
+```bash
+npm run build
+```
+
+2. Start the production server:
+```bash
+npm start
+```
+
+### Deployment Options
+
+1. **Vercel (Recommended)**
+   - Connect your GitHub repository to Vercel
+   - Vercel will automatically build and deploy your application
+   - Set up environment variables in Vercel dashboard
+   ```bash
+   # Deploy to Vercel
+   vercel
+   ```
+
+2. **Traditional Server**
+   - Install Node.js on your server
+   - Clone the repository
+   - Install dependencies: `npm install`
+   - Build: `npm run build`
+   - Start: `npm start`
+   - Use process manager (PM2) for reliability:
+   ```bash
+   # Install PM2
+   npm install -g pm2
+   
+   # Start the application
+   pm2 start npm --name "restaurant-app" -- start
+   
+   # Monitor the application
+   pm2 monitor
+   ```
+
+3. **Docker Deployment**
+   - Build the Docker image:
+   ```bash
+   docker build -t restaurant-app .
+   ```
+   - Run the container:
+   ```bash
+   docker run -p 3000:3000 restaurant-app
+   ```
+
+### Production Considerations
+
+1. **Environment Variables**
+   - Set up proper environment variables for production
+   - Store sensitive information securely
+   - Use different API endpoints for production
+
+2. **Security**
+   - Change the default admin password (`1234`)
+   - Implement proper authentication system
+   - Set up SSL/TLS certificates
+   - Configure security headers
+
+3. **Performance**
+   - Enable caching
+   - Optimize images and assets
+   - Monitor application performance
+   - Set up error tracking
+
+4. **Backup**
+   - Implement regular database backups
+   - Store backups securely
+   - Test backup restoration process
+
 ## Security Note
 
-The current admin password (`1234`) is temporary and should be changed in a production environment. In a real deployment, implement proper authentication and security measures.
+The current admin password (`1234`) is temporary and should be changed in a production environment. In a real deployment:
+- Implement proper authentication and security measures
+- Use environment variables for sensitive information
+- Set up SSL/TLS certificates
+- Configure security headers
+- Regularly update dependencies
+- Monitor for security vulnerabilities
