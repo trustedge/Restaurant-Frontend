@@ -27,9 +27,25 @@ export default function SettingsPage() {
     }));
   };
 
-  const handleSave = () => {
-    // TODO: Implement save to database
-    console.log('Saving settings:', settings);
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+
+      const result = await response.json();
+      console.log('Settings saved successfully:', result);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
   };
 
   return (
