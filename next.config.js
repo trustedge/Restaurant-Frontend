@@ -1,5 +1,7 @@
 module.exports = {
-    experimental: {
-      missingSuspenseWithCSRBailout: false,
+  logging: {
+    fetches: {
+      hmrRefreshes: true,
     },
-  }
+  },
+}

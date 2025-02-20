@@ -29,11 +29,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const response = await fetch('/api/settings');
+        // Extract basePath from the current pathname
+        const response = await fetch(`/api/settings`);
         if (!response.ok) {
           throw new Error('Failed to fetch settings');
         }
+        console.log(process.env.NEXT_PUBLIC_DEV_MODE)
         const data = await response.json();
+        console.log("data is")
+        console.log(data)
         setSettings(data);
       } catch (error) {
         console.error('Failed to load settings:', error);

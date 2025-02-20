@@ -1,21 +1,43 @@
 "use client";
 
-import React from 'react';
-import { useSettings } from './contexts/settings-context';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Phone, Mail, ArrowRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
+import { useSettings } from './contexts/settings-context';
 
 export default function HomePage() {
   const { settings } = useSettings();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isOrdersLoading, setIsOrdersLoading] = useState(true);
 
-  // Mock order statistics (in a real app, this would come from a backend)
+    useEffect(() => {
+      const fetchOrders = async () => {
+        console.log('in fetchorder at homePage')
+        console.log('logging NODE_ENV', process.env.NODE_ENV)
+        try {
+          const response = await fetch('/api/orders');
+          if (!response.ok) {
+            throw new Error('Failed to fetch orders');
+          }
+          const data = await response.json();
+          setOrders(data);
+        } catch (err) {
+          console.error('Error fetching orders:', err);
+        } finally {
+          setIsOrdersLoading(false);
+        }
+      };
+
+      fetchOrders();
+    }, []);
+
   const orderStats = {
-    'Placed': 2,
-    'Preparing': 1,
-    'Ready': 1,
-    'Delivered': 15,
-    'Cancelled': 0
+    'Placed': orders.filter(o => o.OrderStatus.S === 'Placed').length,
+    'Preparing': orders.filter(o => o.OrderStatus.S === 'Preparing').length,
+    'Ready': orders.filter(o => o.OrderStatus.S === 'Ready').length,
+    'Delivered': orders.filter(o => o.OrderStatus.S === 'Delivered').length,
+    'Cancelled': orders.filter(o => o.OrderStatus.S === 'Cancelled').length
   };
 
   const statusColors = {
@@ -73,19 +95,30 @@ export default function HomePage() {
       {/* Order Statistics */}
       <div>
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Today's Orders</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {Object.entries(orderStats).map(([status, count]) => (
-            <Link key={status} href={`/orders?status=${status}`}>
-              <Card className={`p-6 border-2 ${statusColors[status as keyof typeof statusColors]} group hover:shadow-lg transition-all duration-200 cursor-pointer relative`}>
-                <div className="text-3xl font-bold mb-1">{count}</div>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">{status}</div>
-                  <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                </div>
+        {isOrdersLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {Array(5).fill(0).map((_, i) => (
+              <Card key={i} className="p-6 border-2 animate-pulse">
+                <div className="h-8 bg-gray-200 rounded mb-1"></div>
+                <div className="h-4 bg-gray-200 rounded w-20"></div>
               </Card>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {Object.entries(orderStats).map(([status, count]) => (
+              <Link key={status} href={`/orders?status=${status}`}>
+                <Card className={`p-6 border-2 ${statusColors[status as keyof typeof statusColors]} group hover:shadow-lg transition-all duration-200 cursor-pointer relative`}>
+                  <div className="text-3xl font-bold mb-1">{count}</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">{status}</div>
+                    <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -49,7 +49,8 @@ export default function OrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('/api/orders');
+        console.log('orders/page.tsx l52')
+        const response = await fetch(`/api/orders`);
         if (!response.ok) {
           throw new Error('Failed to fetch orders');
         }

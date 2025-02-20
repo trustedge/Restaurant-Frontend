@@ -5,7 +5,7 @@ import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 const createDynamoDBClient = () => {
   // Only use credentials in local development mode
-  const clientConfig = process.env.NEXT_PUBLIC_DEV_MODE === 'true' 
+  const clientConfig = process.env.NEXT_PUBLIC_DEV_MODE && process.env.NEXT_PUBLIC_DEV_MODE === 'true' 
     ? {
         region: process.env.AWS_REGION,
         credentials: {
@@ -13,7 +13,7 @@ const createDynamoDBClient = () => {
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
         },
       }
-    : { region: process.env.AWS_REGION };
+    : {region: process.env.AWS_REGION || 'us-east-1', };
 
   return new DynamoDBClient(clientConfig);
 };
@@ -117,12 +117,13 @@ export const getAllMenuItems = async (): Promise<MenuItem[]> => {
 
 export const getAllOrders = async (): Promise<Order[]> => {
   // Check if we're in development mode
-  if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
+  if (process.env.NEXT_PUBLIC_DEV_MODE && process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
     return mockOrders;
   }
-
+  // return mockOrders;
   // Production mode: fetch from DynamoDB
   try {
+    console.log('dynamodb.ts getting from', process.env.DYNAMODB_ORDER_TABLE_NAME)
     const command = new ScanCommand({
       TableName: process.env.DYNAMODB_ORDER_TABLE_NAME,
     });
@@ -151,7 +152,7 @@ export const getAllOrders = async (): Promise<Order[]> => {
       OrderStatus: { S: item.OrderStatus || 'Placed' },
       UpdateDateTime: { S: item.UpdateDateTime || new Date().toISOString() }
     }));
-
+    console.log('orders are', orders)
     return orders;
   } catch (error) {
     console.error('Error fetching orders from DynamoDB:', error);

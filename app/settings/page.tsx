@@ -29,7 +29,7 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch('/api/settings', {
+      const response = await fetch(`/api/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -78,22 +78,22 @@ DYNAMODB_ORDER_TABLE_NAME=Johnys-orders
 DYNAMODB_MENU_TABLE_NAME=restaurant_menu
 
 # SSM Parameter Store
-SSM_PARAMETER_PATH=/terrys-american-dining
+PATH_PREFIX=/terrys-american-dining
 ```
 
 5. Setup SSM parameters:
 ```bash
 # Set parameter path variable
-export SSM_PATH=/terrys-american-dining  # Should match SSM_PARAMETER_PATH in .env
+export PATH_PREFIX=/sushi-dynasty  # Should match PATH_PREFIX in .env
 
 # Create SSM parameters
-aws ssm put-parameter --name "$SSM_PATH/restaurant_name" --value "Terry's American Dining" --type "String"
-aws ssm put-parameter --name "$SSM_PATH/restaurant_description" --value "Terry's American Dining provides amazing American cuisine" --type "String"
-aws ssm put-parameter --name "$SSM_PATH/restaurant_address" --value "123 Main St" --type "String"
-aws ssm put-parameter --name "$SSM_PATH/restaurant_hours" --value "9AM-10PM" --type "String"
-aws ssm put-parameter --name "$SSM_PATH/restaurant_email" --value "testing@johndining.com" --type "String"
-aws ssm put-parameter --name "$SSM_PATH/restaurant_support_phone" --value "+1234567890" --type "String"
-aws ssm put-parameter --name "$SSM_PATH/phone_agent_instruction" --value "If a customer wish to reserve table, your goal is to gather necessary information from callers in a friendly and efficient manner like follows: 1. Ask for their name. 2. Ask for number of the people who will be dining. 3. Request their preferred date and time for the appointment. 4. Confirm all details with the caller, including the date and time of the appointment." --type "String"
+aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_name" --value "Terry's American Dining" --type "String"
+aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_description" --value "Terry's American Dining provides amazing American cuisine" --type "String"
+aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_address" --value "123 Main St" --type "String"
+aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_hours" --value "9AM-10PM" --type "String"
+aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_email" --value "testing@johndining.com" --type "String"
+aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_support_phone" --value "+1234567890" --type "String"
+aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/phone_agent_instruction" --value "If a customer wish to reserve table, your goal is to gather necessary information from callers in a friendly and efficient manner like follows: 1. Ask for their name. 2. Ask for number of the people who will be dining. 3. Request their preferred date and time for the appointment. 4. Confirm all details with the caller, including the date and time of the appointment." --type "String"
 ```
 
 6. Start the development server:
@@ -210,7 +210,7 @@ npm start
 
 1. **Environment Variables and AWS Configuration**
    - Set up proper environment variables for production
-   - Configure SSM_PARAMETER_PATH for your production environment
+   - Configure NEXT_PUBLIC_PATH_PREFIX for your production environment
    - In AWS Fargate, the application will use IAM roles instead of access keys
    - Ensure IAM roles have proper permissions for SSM Parameter Store:
      ```json
