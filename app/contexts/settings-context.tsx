@@ -30,7 +30,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const loadSettings = async () => {
       try {
         // Extract basePath from the current pathname
-        const response = await fetch(`/api/settings`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const response = await fetch(`${apiUrl}/api/settings`);
         if (!response.ok) {
           throw new Error('Failed to fetch settings');
         }

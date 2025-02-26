@@ -29,7 +29,8 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`/api/settings`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

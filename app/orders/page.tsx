@@ -28,7 +28,7 @@ export default function OrdersPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [displayedItems, setDisplayedItems] = useState<number>(40); // Increased initial load
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const loadMoreTimeoutRef = useRef<NodeJS.Timeout>();
+  const loadMoreTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { menuItems, categories, filterMenuItems } = useMenu();
@@ -50,7 +50,8 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       try {
         console.log('orders/page.tsx l52')
-        const response = await fetch(`/api/orders`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const response = await fetch(`${apiUrl}/api/orders`);
         if (!response.ok) {
           throw new Error('Failed to fetch orders');
         }

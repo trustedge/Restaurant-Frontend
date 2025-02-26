@@ -59,3 +59,12 @@ docker-run:
 	-e PATH_PREFIX=/sushi-dynasty \
 	-e DYNAMODB_ORDER_TABLE_NAME=development-Sushi-Dynasty-orderTable \
 	restaurant-frontend
+
+SSM:
+	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_NAME" --value "Sushi Dynasty" --type "String"
+	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_DESCRIPTION" --value "Sushi Dynasty offers authentic Japanese cuisine with the finest and freshest ingredients!" --type "String"
+	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_ADDRESS" --value "456 Sakura Ave" --type "String"
+	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_HOURS" --value "9AM-10PM" --type "String"
+	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_EMAIL" --value "info@sushidynasty.com" --type "String"
+	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_SUPPORT_PHONE" --value "+1234567890" --type "String"
+	aws ssm put-parameter --name "/sushi-dynasty/PHONE_AGENT_INSTRUCTION" --value file://./reference/instructions.data --type "String"

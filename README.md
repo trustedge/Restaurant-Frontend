@@ -87,13 +87,23 @@ PATH_PREFIX=/terrys-american-dining
 export PATH_PREFIX=/sushi-dynasty  # Should match PATH_PREFIX in .env
 
 # Create SSM parameters
-aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_name" --value "Terry's American Dining" --type "String"
-aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_description" --value "Terry's American Dining provides amazing American cuisine" --type "String"
-aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_address" --value "123 Main St" --type "String"
-aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_hours" --value "9AM-10PM" --type "String"
-aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_email" --value "testing@johndining.com" --type "String"
-aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/restaurant_support_phone" --value "+1234567890" --type "String"
-aws ssm put-parameter --name "$NEXT_PUBLIC_PATH_PREFIX/phone_agent_instruction" --value "If a customer wish to reserve table, your goal is to gather necessary information from callers in a friendly and efficient manner like follows: 1. Ask for their name. 2. Ask for number of the people who will be dining. 3. Request their preferred date and time for the appointment. 4. Confirm all details with the caller, including the date and time of the appointment." --type "String"
+aws ssm put-parameter --name "/sushi-dynasty/restaurant_name" --value "Sushi Dynasty" --type "String"
+aws ssm put-parameter --name "/sushi-dynasty/restaurant_description" --value "Sushi Dynasty offers authentic Japanese cuisine with the finest and freshest ingredients!" --type "String"
+aws ssm put-parameter --name "/sushi-dynasty/restaurant_address" --value "456 Sakura Ave" --type "String"
+aws ssm put-parameter --name "/sushi-dynasty/restaurant_hours" --value "9AM-10PM" --type "String"
+aws ssm put-parameter --name "/sushi-dynasty/restaurant_email" --value "info@sushidynasty.com" --type "String"
+aws ssm put-parameter --name "/sushi-dynasty/restaurant_support_phone" --value "+1234567890" --type "String"
+aws ssm put-parameter --name "/sushi-dynasty/phone_agent_instruction" --value "If a customer wish to reserve table, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:
+1. Ask for their name.
+2. Ask for number of the people who will be dining.
+3. Request their preferred date and time for the appointment.
+4. Confirm all details with the caller, including the date and time of the appointment.
+
+If a customer wishes to place an order:
+1. Please confirm with the details(important fields: Customer name, item name, quantity if not specified will be default to 1) before executing the PlaceOrder function
+2. The customer can only order items in the menu (Only read out the name of the items if asked to do so, and read description, price, calories only if specifically requested)
+3. If customer wants an item that doesn't exist in menu below, you may suggest an menu item that is similar to the customer's item according to the menu description
+4. Customer can also add side notes on each item." --type "String"
 ```
 
 6. Start the development server:
