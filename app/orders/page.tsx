@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-import { Order } from '@/app/types/orders';
+import { DynamoOrder, DynamoOrderItem } from '@/app/types/orders';
 
 export default function OrdersPage() {
   const searchParams = useSearchParams();
@@ -26,7 +26,7 @@ export default function OrdersPage() {
   const [currentOrderIndex, setCurrentOrderIndex] = useState<number>(-1);
   const [menuSearchTerm, setMenuSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [displayedItems, setDisplayedItems] = useState<number>(40); // Increased initial load
+  const [displayedItems, setDisplayedItems] = useState<number>(40);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -42,14 +42,13 @@ export default function OrdersPage() {
     'Cancelled': 'bg-red-100 text-red-800'
   };
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<DynamoOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        console.log('orders/page.tsx l52')
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
         const response = await fetch(`${apiUrl}/api/orders`);
         if (!response.ok) {
@@ -69,38 +68,32 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
-  // Get filtered menu items
   const filteredItems = filterMenuItems(selectedCategory, menuSearchTerm);
 
-  // Scroll handler with improved loading logic
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const scrollThreshold = 300; // Increased threshold for earlier loading
+    const scrollThreshold = 300;
 
     if (!isLoadingMore && 
         scrollHeight - (scrollTop + clientHeight) < scrollThreshold && 
         displayedItems < filteredItems.length) {
       setIsLoadingMore(true);
       
-      // Clear any existing timeout
       if (loadMoreTimeoutRef.current) {
         clearTimeout(loadMoreTimeoutRef.current);
       }
 
-      // Add delay to prevent rapid firing
       loadMoreTimeoutRef.current = setTimeout(() => {
-        setDisplayedItems(prev => Math.min(prev + 40, filteredItems.length)); // Load more items at once
+        setDisplayedItems(prev => Math.min(prev + 40, filteredItems.length));
         setIsLoadingMore(false);
-      }, 300); // Reduced delay
+      }, 300);
     }
   };
 
-  // Reset displayed items when filters change
   useEffect(() => {
     setDisplayedItems(40);
   }, [selectedCategory, menuSearchTerm]);
 
-  // Update filter status when URL query parameter changes
   useEffect(() => {
     const status = searchParams.get('status');
     if (status) {
@@ -108,7 +101,6 @@ export default function OrdersPage() {
     }
   }, [searchParams]);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (loadMoreTimeoutRef.current) {
@@ -130,18 +122,21 @@ export default function OrdersPage() {
 
   const handleStatusChange = (orderIndex: number, newStatus: string) => {
     const updatedOrders = [...orders];
-    updatedOrders[orderIndex].OrderStatus.S = newStatus;
+    updatedOrders[orderIndex].OrderStatus = newStatus;
     setOrders(updatedOrders);
   };
 
-  const filterOrders = orders.filter(order => {
-    const matchesStatus = filterStatus === 'All' || order.OrderStatus.S === filterStatus;
+  const filterOrders = orders?.filter(order => {
+    if (!order?.OrderStatus || !order?.Customer?.Name || !order?.OrderNumber || !order?.Items) {
+      return false;
+    }
+    const matchesStatus = filterStatus === 'All' || order.OrderStatus === filterStatus;
     const matchesSearch = 
-      order.Customer.M.Name.S.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.OrderNumber.S.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.Items.L.some(item => item.M.Name.S.toLowerCase().includes(searchTerm.toLowerCase()));
+      order.Customer.Name.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
+      order.OrderNumber.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
+      order.Items.some(item => item?.Name?.toLowerCase().includes(searchTerm?.toLowerCase() || ''));
     return matchesStatus && matchesSearch;
-  });
+  }) || [];
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -151,31 +146,31 @@ export default function OrdersPage() {
           <div className="grid grid-cols-5 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {orders.filter(o => o.OrderStatus.S === 'Placed').length}
+                {orders?.filter(o => o?.OrderStatus === 'Placed')?.length || 0}
               </div>
               <div className="text-sm text-gray-600">New Orders</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {orders.filter(o => o.OrderStatus.S === 'Preparing').length}
+                {orders?.filter(o => o?.OrderStatus === 'Preparing')?.length || 0}
               </div>
               <div className="text-sm text-gray-600">Preparing</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {orders.filter(o => o.OrderStatus.S === 'Ready').length}
+                {orders?.filter(o => o?.OrderStatus === 'Ready')?.length || 0}
               </div>
               <div className="text-sm text-gray-600">Ready</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-600">
-                {orders.filter(o => o.OrderStatus.S === 'Delivered').length}
+                {orders?.filter(o => o?.OrderStatus === 'Delivered')?.length || 0}
               </div>
               <div className="text-sm text-gray-600">Delivered</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
-                {orders.filter(o => o.OrderStatus.S === 'Cancelled').length}
+                {orders?.filter(o => o?.OrderStatus === 'Cancelled')?.length || 0}
               </div>
               <div className="text-sm text-gray-600">Cancelled</div>
             </div>
@@ -211,7 +206,6 @@ export default function OrdersPage() {
             New Order
           </Button>
         </div>
-
         {/* Loading and Error States */}
         {isLoading && (
           <div className="flex justify-center items-center p-8">
@@ -228,12 +222,12 @@ export default function OrdersPage() {
         {/* Orders Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 auto-rows-max">
           {filterOrders.map((order, orderIndex) => (
-            <div key={order.OrderNumber.S} 
+            <div key={order.OrderNumber} 
                  className={`bg-white rounded-lg shadow p-4 border-l-4 ${
-                   order.OrderStatus.S === 'Placed' ? 'border-blue-500' :
-                   order.OrderStatus.S === 'Preparing' ? 'border-yellow-500' :
-                   order.OrderStatus.S === 'Ready' ? 'border-green-500' :
-                   order.OrderStatus.S === 'Delivered' ? 'border-gray-500' :
+                   order.OrderStatus === 'Placed' ? 'border-blue-500' :
+                   order.OrderStatus === 'Preparing' ? 'border-yellow-500' :
+                   order.OrderStatus === 'Ready' ? 'border-green-500' :
+                   order.OrderStatus === 'Delivered' ? 'border-gray-500' :
                    'border-red-500'
                  }`}
             >
@@ -241,20 +235,20 @@ export default function OrdersPage() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold">#{order.OrderNumber.S}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[order.OrderStatus.S as keyof typeof statusColors]}`}>
-                      {order.OrderStatus.S}
+                    <span className="font-bold">#{order.OrderNumber}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[order.OrderStatus as keyof typeof statusColors]}`}>
+                      {order.OrderStatus}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600 flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    {formatDate(order.OrderDateTime.S)}
+                    {formatDate(order.OrderDateTime)}
                   </div>
                 </div>
                 <select
-                  value={order.OrderStatus.S}
+                  value={order.OrderStatus}
                   onChange={(e) => handleStatusChange(orderIndex, e.target.value)}
-                  className={`px-2 py-1 rounded-md text-sm ${statusColors[order.OrderStatus.S as keyof typeof statusColors]}`}
+                  className={`px-2 py-1 rounded-md text-sm ${statusColors[order.OrderStatus as keyof typeof statusColors]}`}
                 >
                   {statusOptions.map(status => (
                     <option key={status} value={status}>{status}</option>
@@ -264,8 +258,8 @@ export default function OrdersPage() {
 
               {/* Customer Info */}
               <div className="mb-4">
-                <div className="font-medium">{order.Customer.M.Name.S}</div>
-                <div className="text-sm text-gray-600">{order.Customer.M.PhoneNumber.S}</div>
+                <div className="font-medium">{order.Customer.Name}</div>
+                <div className="text-sm text-gray-600">{order.Customer.PhoneNumber}</div>
               </div>
 
               {/* Items */}
@@ -285,11 +279,11 @@ export default function OrdersPage() {
                     Add Items
                   </Button>
                 </div>
-                {order.Items.L.map((item, itemIndex) => (
+                {order.Items.map((item, itemIndex) => (
                   <div key={itemIndex} className="flex items-start justify-between bg-gray-50 p-2 rounded">
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
-                        <div className="font-medium">{item.M.Name.S}</div>
+                        <div className="font-medium">{item.Name}</div>
                         <div className="flex items-center gap-2">
                           <Button
                             size="sm"
@@ -297,23 +291,23 @@ export default function OrdersPage() {
                             className="h-7 w-7 p-0"
                             onClick={() => {
                               const updatedOrders = [...orders];
-                              const currentQuantity = item.M.Quantity.N;
+                              const currentQuantity = item.Quantity;
                               if (currentQuantity > 1) {
-                                updatedOrders[orderIndex].Items.L[itemIndex].M.Quantity.N = currentQuantity - 1;
+                                updatedOrders[orderIndex].Items[itemIndex].Quantity = currentQuantity - 1;
                                 setOrders(updatedOrders);
                               }
                             }}
                           >
                             -
                           </Button>
-                          <span className="w-8 text-center">{item.M.Quantity.N}</span>
+                          <span className="w-8 text-center">{item.Quantity}</span>
                           <Button
                             size="sm"
                             variant="outline"
                             className="h-7 w-7 p-0"
                             onClick={() => {
                               const updatedOrders = [...orders];
-                              updatedOrders[orderIndex].Items.L[itemIndex].M.Quantity.N = item.M.Quantity.N + 1;
+                              updatedOrders[orderIndex].Items[itemIndex].Quantity = item.Quantity + 1;
                               setOrders(updatedOrders);
                             }}
                           >
@@ -323,12 +317,12 @@ export default function OrdersPage() {
                       </div>
                       <Input
                         type="text"
-                        value={item.M.Notes.S}
+                        value={item.Notes}
                         placeholder="Add notes..."
                         className="text-sm w-full bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 mt-1"
                         onChange={(e) => {
                           const updatedOrders = [...orders];
-                          updatedOrders[orderIndex].Items.L[itemIndex].M.Notes.S = e.target.value;
+                          updatedOrders[orderIndex].Items[itemIndex].Notes = e.target.value;
                           setOrders(updatedOrders);
                         }}
                       />
@@ -340,10 +334,10 @@ export default function OrdersPage() {
               {/* Notes */}
               <div className="mt-4">
                 <Textarea
-                  value={order.Notes.S}
+                  value={order.Notes}
                   onChange={(e) => {
                     const updatedOrders = [...orders];
-                    updatedOrders[orderIndex].Notes.S = e.target.value;
+                    updatedOrders[orderIndex].Notes = e.target.value;
                     setOrders(updatedOrders);
                   }}
                   placeholder="Add order notes..."
@@ -470,15 +464,14 @@ export default function OrdersPage() {
                       const newItems = Array.from(selectedItems).map(id => {
                         const menuItem = menuItems.find(item => item.id === id);
                         return {
-                          M: {
-                            Name: { S: menuItem?.name || '' },
-                            Notes: { S: '' },
-                            Quantity: { N: 1 }
-                          }
+                          Name: menuItem?.name || '',
+                          Notes: '',
+                          Quantity: 1,
+                          Price: typeof menuItem?.price === 'string' ? parseFloat(menuItem.price) : (menuItem?.price || 0)
                         };
                       });
-                      updatedOrders[currentOrderIndex].Items.L = [
-                        ...updatedOrders[currentOrderIndex].Items.L,
+                      updatedOrders[currentOrderIndex].Items = [
+                        ...updatedOrders[currentOrderIndex].Items,
                         ...newItems
                       ];
                       setOrders(updatedOrders);

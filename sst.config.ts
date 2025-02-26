@@ -11,9 +11,9 @@ export default {
     app.stack(function Site({ stack }: StackContext) {
       const table = new Table(stack, "Orders", {
         fields: {
-          id: "string",
+          OrderNumber: "string",
         },
-        primaryIndex: { partitionKey: "id" },
+        primaryIndex: { partitionKey: "OrderNumber" },
       });
 
       const api = new Api(stack, "Api", {
@@ -53,11 +53,21 @@ export default {
         environment: {
           NEXT_PUBLIC_API_URL: api.url,
         },
+        customDomain:
+          stack.stage === "prod"
+            ? {
+                domainName: process.env.PATH_PREFIX?.substring(1)+"."+process.env.DOMAIN_URL,
+                domainAlias: "www."+process.env.PATH_PREFIX?.substring(1)+"."+process.env.DOMAIN_URL,
+                hostedZone: process.env.DOMAIN_URL,
+                // acmCertificate: process.env.CERTIFICATE_ARN
+              }
+            : undefined,
       });
 
       stack.addOutputs({
         ApiEndpoint: api.url,
-        SiteUrl: site.url,
+        CloudFrontURL: site.url,
+        SiteURL:process.env.PATH_PREFIX?.substring(1)+"."+process.env.DOMAIN_URL
       });
     });
   },

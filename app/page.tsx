@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { DynamoOrder } from '@/app/types/orders';
 import { MapPin, Clock, Phone, Mail, ArrowRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
@@ -8,19 +9,19 @@ import { useSettings } from './contexts/settings-context';
 
 export default function HomePage() {
   const { settings } = useSettings();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<DynamoOrder[]>([]);
   const [isOrdersLoading, setIsOrdersLoading] = useState(true);
 
     useEffect(() => {
       const fetchOrders = async () => {
-        console.log('in fetchorder at homePage')
-        console.log('logging NODE_ENV', process.env.NODE_ENV)
         try {
-          const response = await fetch('/api/orders');
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+          const response = await fetch(`${apiUrl}/api/orders`);
           if (!response.ok) {
             throw new Error('Failed to fetch orders');
           }
           const data = await response.json();
+          console.log('getting order data in home page', data)
           setOrders(data);
         } catch (err) {
           console.error('Error fetching orders:', err);
@@ -33,11 +34,11 @@ export default function HomePage() {
     }, []);
 
   const orderStats = {
-    'Placed': orders.filter(o => o.OrderStatus.S === 'Placed').length,
-    'Preparing': orders.filter(o => o.OrderStatus.S === 'Preparing').length,
-    'Ready': orders.filter(o => o.OrderStatus.S === 'Ready').length,
-    'Delivered': orders.filter(o => o.OrderStatus.S === 'Delivered').length,
-    'Cancelled': orders.filter(o => o.OrderStatus.S === 'Cancelled').length
+    'Placed': orders?.filter(o => o?.OrderStatus === 'Placed')?.length || 0,
+    'Preparing': orders?.filter(o => o?.OrderStatus === 'Preparing')?.length || 0,
+    'Ready': orders?.filter(o => o?.OrderStatus === 'Ready')?.length || 0,
+    'Delivered': orders?.filter(o => o?.OrderStatus === 'Delivered')?.length || 0,
+    'Cancelled': orders?.filter(o => o?.OrderStatus === 'Cancelled')?.length || 0
   };
 
   const statusColors = {

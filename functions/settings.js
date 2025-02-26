@@ -1,25 +1,15 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { SSMClient, GetParameterCommand, PutParameterCommand } from "@aws-sdk/client-ssm";
-
-interface RestaurantSettings {
-  RESTAURANT_NAME: string;
-  RESTAURANT_DESCRIPTION: string;
-  RESTAURANT_ADDRESS: string;
-  RESTAURANT_HOURS: string;
-  RESTAURANT_EMAIL: string;
-  RESTAURANT_SUPPORT_PHONE: string;
-  PHONE_AGENT_INSTRUCTION: string;
-}
 
 const client = new SSMClient({});
 const parameterPath = process.env.PATH_PREFIX || '';
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+
+export const handler = async (event) => {
   try {
-    if (event.httpMethod === 'GET') {
-      const settings: RestaurantSettings = {} as RestaurantSettings;
+    if (event.requestContext.http.method === 'GET') {
+      const settings = {};
       
-      const keys: (keyof RestaurantSettings)[] = [
+      const keys = [
         'RESTAURANT_NAME',
         'RESTAURANT_DESCRIPTION',
         'RESTAURANT_ADDRESS',
@@ -53,7 +43,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         }
       };
     } else if (event.httpMethod === 'PUT') {
-      const settings: RestaurantSettings = JSON.parse(event.body || '{}');
+      const settings = JSON.parse(event.body || '{}');
       
       for (const [key, value] of Object.entries(settings)) {
         const command = new PutParameterCommand({

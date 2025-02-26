@@ -7,7 +7,13 @@
 		"build": "next build",
 		"start": "NODE_OPTIONS='--inspect' next start",
 		"lint": "next lint",
-		"type-check": "tsc --noEmit"
+		"type-check": "tsc --noEmit",
+		"sst:dev": "npx sst dev",
+		"sst:build": "npx sst build",
+		"sst:deploy": "npx sst deploy",
+		"sst:deploy:prod": "npx sst deploy --stage prod",
+		"sst:remove": "npx sst remove",
+		"sst:remove:prod": "npx sst remove --stage prod"
 	},
 	"dependencies": {
 		"@aws-sdk/client-api-gateway": "^3.734.0",
