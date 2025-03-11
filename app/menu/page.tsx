@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAdmin } from '../contexts/admin-context';
 import { useMenu } from '../contexts/menu-context';
 import type { MenuItem } from '../contexts/menu-context';
+import { createMenuItem, updateMenuItem, deleteMenuItem } from '@/app/utils/dynamodb';
 
 export default function MenuPage() {
   const { isAdmin } = useAdmin();
@@ -46,8 +47,20 @@ export default function MenuPage() {
 
   const categories = ['All', 'Appetizers', 'Main Course', 'Desserts', 'Beverages'];
 
-  const handleDeleteItem = (itemToDelete: MenuItem) => {
-    setMenuItems(menuItems.filter(item => item.id !== itemToDelete.id));
+  const handleDeleteItem = async (itemToDelete: MenuItem) => {
+    try {
+      // If we're in DEV mode, just update the state
+      if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
+        setMenuItems(menuItems.filter(item => item.id !== itemToDelete.id));
+      } else {
+        // Otherwise, delete from DynamoDB and then update state
+        await deleteMenuItem(itemToDelete.id);
+        setMenuItems(menuItems.filter(item => item.id !== itemToDelete.id));
+      }
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      alert('Failed to delete menu item. Please try again.');
+    }
   };
 
   return (
@@ -218,26 +231,47 @@ export default function MenuPage() {
             }}>
               Cancel
             </Button>
-            <Button onClick={() => {
-              if (selectedItem) {
-                // Edit existing item
-                setMenuItems(menuItems.map(item => 
-                  item.id === selectedItem.id ? selectedItem : item
-                ));
-              } else {
-                // Add new item
-                setMenuItems([...menuItems, newItem]);
+            <Button onClick={async () => {
+              try {
+                if (selectedItem) {
+                  // Edit existing item
+                  if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
+                    // In DEV mode, just update the state
+                    setMenuItems(menuItems.map(item => 
+                      item.id === selectedItem.id ? selectedItem : item
+                    ));
+                  } else {
+                    // In non-DEV mode, update in DynamoDB
+                    await updateMenuItem(selectedItem);
+                    setMenuItems(menuItems.map(item => 
+                      item.id === selectedItem.id ? selectedItem : item
+                    ));
+                  }
+                } else {
+                  // Add new item
+                  if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
+                    // In DEV mode, just update the state
+                    setMenuItems([...menuItems, newItem]);
+                  } else {
+                    // In non-DEV mode, create in DynamoDB
+                    const createdItem = await createMenuItem(newItem);
+                    setMenuItems([...menuItems, createdItem]);
+                  }
+                }
+                setIsAddItemDialogOpen(false);
+                setSelectedItem(null);
+                setNewItem({
+                  id: generateId(),
+                  name: "",
+                  price: "",
+                  calories: "",
+                  description: "",
+                  category: "Main Course"
+                });
+              } catch (error) {
+                console.error('Error saving menu item:', error);
+                alert('Failed to save menu item. Please try again.');
               }
-              setIsAddItemDialogOpen(false);
-              setSelectedItem(null);
-              setNewItem({
-                id: generateId(),
-                name: "",
-                price: "",
-                calories: "",
-                description: "",
-                category: "Main Course"
-              });
             }}>
               {selectedItem ? 'Save Changes' : 'Add Item'}
             </Button>

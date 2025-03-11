@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { MenuItem } from '@/app/types/menu';
 export type { MenuItem };
-// import { getAllMenuItems } from '@/app/utils/dynamodb';
+import { getAllMenuItems } from '@/app/utils/dynamodb';
 
 interface MenuContextType {
   menuItems: MenuItem[];
@@ -39,8 +39,15 @@ export function MenuProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        // const data = await getAllMenuItems();
-        const data =  mockMenuItems;
+        let data;
+        // Check if we're in DEV mode
+        if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
+          console.log('Using mock menu items in DEV mode');
+          data = mockMenuItems;
+        } else {
+          console.log('Fetching menu items from DynamoDB');
+          data = await getAllMenuItems();
+        }
         setMenuItems(data);
         setError(null);
       } catch (err) {

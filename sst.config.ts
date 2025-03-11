@@ -28,6 +28,51 @@ export default {
               permissions: [table],
             },
           },
+          "GET /api/menu": {
+            function: {
+              handler: "functions/menu.handler",
+              environment: {
+                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME || 'Menu',
+              },
+              permissions: ["dynamodb:*"],
+            },
+          },
+          "GET /api/menu/{id}": {
+            function: {
+              handler: "functions/menu.handler",
+              environment: {
+                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+              },
+              permissions: ["dynamodb:*"],
+            },
+          },
+          "POST /api/menu": {
+            function: {
+              handler: "functions/menu.handler",
+              environment: {
+                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+              },
+              permissions: ["dynamodb:*"],
+            },
+          },
+          "PUT /api/menu/{id}": {
+            function: {
+              handler: "functions/menu.handler",
+              environment: {
+                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+              },
+              permissions: ["dynamodb:*"],
+            },
+          },
+          "DELETE /api/menu/{id}": {
+            function: {
+              handler: "functions/menu.handler",
+              environment: {
+                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+              },
+              permissions: ["dynamodb:*"],
+            },
+          },
           "GET /api/settings": {
             function: {
               handler: "functions/settings.handler",
