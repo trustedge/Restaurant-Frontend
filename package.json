@@ -8,12 +8,12 @@
 		"start": "NODE_OPTIONS='--inspect' next start",
 		"lint": "next lint",
 		"type-check": "tsc --noEmit",
-		"sst:dev": "npx sst dev",
-		"sst:build": "npx sst build",
-		"sst:deploy": "npx sst deploy",
-		"sst:deploy:prod": "npx sst deploy --stage prod",
-		"sst:remove": "npx sst remove",
-		"sst:remove:prod": "npx sst remove --stage prod"
+		"sst:dev": "sst dev",
+		"sst:build": "sst build",
+		"sst:deploy": "sst deploy",
+		"sst:deploy:prod": "sst deploy --stage prod",
+		"sst:remove": "sst remove",
+		"sst:remove:prod": "sst remove --stage prod"
 	},
 	"dependencies": {
 		"@aws-sdk/client-api-gateway": "^3.734.0",
@@ -41,7 +41,7 @@
 		"constructs": "^10.4.2",
 		"eslint": "^8.56.0",
 		"eslint-config-next": "^14.0.4",
-		"sst": "2.47.3",
+		"sst": "^3.9.36",
 		"typescript": "^5.3.3"
 	}
 }

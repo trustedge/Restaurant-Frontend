@@ -1,119 +1,130 @@
-import { StackContext, App, Api, Table, NextjsSite } from "sst/constructs";
+/// <reference path="./.sst/platform/config.d.ts" />
 
-export default {
-  config(_input: any) {
+export default $config({
+  app(input) {
     return {
-      name: process.env.PATH_PREFIX?.substring(1)+"-restaurantfrontend",
+      name: process.env.PATH_PREFIX!.substring(1) + "-restaurantfrontend",
+      home: "aws",
+      removal: input?.stage === "prod" ? "retain" : "remove",
+      providers: { aws: "6.71.0" },
       region: "us-east-1"
     };
   },
-  stacks(app: App) {
-    app.stack(function Site({ stack }: StackContext) {
-      const table = new Table(stack, "Orders", {
-        fields: {
-          OrderNumber: "string",
-        },
-        primaryIndex: { partitionKey: "OrderNumber" },
-      });
-
-      const api = new Api(stack, "Api", {
-        cors: true,
-        routes: {
-          "GET /api/orders": {
-            function: {
-              handler: "functions/orders.handler",
-              environment: {
-                DYNAMODB_ORDERS_TABLE: table.tableName,
-              },
-              permissions: [table],
-            },
-          },
-          "GET /api/menu": {
-            function: {
-              handler: "functions/menu.handler",
-              environment: {
-                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME || 'Menu',
-              },
-              permissions: ["dynamodb:*"],
-            },
-          },
-          "GET /api/menu/{id}": {
-            function: {
-              handler: "functions/menu.handler",
-              environment: {
-                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
-              },
-              permissions: ["dynamodb:*"],
-            },
-          },
-          "POST /api/menu": {
-            function: {
-              handler: "functions/menu.handler",
-              environment: {
-                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
-              },
-              permissions: ["dynamodb:*"],
-            },
-          },
-          "PUT /api/menu/{id}": {
-            function: {
-              handler: "functions/menu.handler",
-              environment: {
-                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
-              },
-              permissions: ["dynamodb:*"],
-            },
-          },
-          "DELETE /api/menu/{id}": {
-            function: {
-              handler: "functions/menu.handler",
-              environment: {
-                DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
-              },
-              permissions: ["dynamodb:*"],
-            },
-          },
-          "GET /api/settings": {
-            function: {
-              handler: "functions/settings.handler",
-              environment: {
-                PATH_PREFIX: process.env.PATH_PREFIX || "",
-              },
-              permissions: ["ssm:GetParameter", "ssm:PutParameter"],
-            },
-          },
-          "PUT /api/settings": {
-            function: {
-              handler: "functions/settings.handler",
-              environment: {
-                PATH_PREFIX: process.env.PATH_PREFIX || "",
-              },
-              permissions: ["ssm:GetParameter", "ssm:PutParameter"],
-            },
-          },
-        },
-      });
-
-      const site = new NextjsSite(stack, "Web", {
-        environment: {
-          NEXT_PUBLIC_API_URL: api.url,
-        },
-        customDomain:
-          stack.stage === "prod"
-            ? {
-                domainName: process.env.PATH_PREFIX?.substring(1)+"."+process.env.DOMAIN_URL,
-                domainAlias: "www."+process.env.PATH_PREFIX?.substring(1)+"."+process.env.DOMAIN_URL,
-                hostedZone: process.env.DOMAIN_URL,
-                // acmCertificate: process.env.CERTIFICATE_ARN
-              }
-            : undefined,
-      });
-
-      stack.addOutputs({
-        ApiEndpoint: api.url,
-        CloudFrontURL: site.url,
-        SiteURL:process.env.PATH_PREFIX?.substring(1)+"."+process.env.DOMAIN_URL
-      });
+  async run() {
+   
+    // Create the API
+    const api = new sst.aws.ApiGatewayV2("Api", {
+      cors: true,
     });
+    
+    // Add routes to the API
+    api.route("GET /api/orders", { 
+      handler: "functions/orders.handler",
+      environment: {
+        DYNAMODB_ORDERS_TABLE: process.env.DYNAMODB_ORDER_TABLE_NAME! ,
+      },
+      permissions: [{
+        actions: ["dynamodb:*"],
+        resources: ["*"]
+      }],
+    });
+    
+    api.route("GET /api/menu", { 
+      handler: "functions/menu.handler",
+      environment: {
+        DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+      },
+      permissions: [{
+        actions: ["dynamodb:*"],
+        resources: ["*"]
+      }],
+    });
+    
+    api.route("GET /api/menu/{id}", { 
+      handler: "functions/menu.handler",
+      environment: {
+        DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+      },
+      permissions: [{
+        actions: ["dynamodb:*"],
+        resources: ["*"]
+      }],
+    });
+    
+    api.route("POST /api/menu", { 
+      handler: "functions/menu.handler",
+      environment: {
+        DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+      },
+      permissions: [{
+        actions: ["dynamodb:*"],
+        resources: ["*"]
+      }],
+    });
+    
+    api.route("PUT /api/menu/{id}", { 
+      handler: "functions/menu.handler",
+      environment: {
+        DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+      },
+      permissions: [{
+        actions: ["dynamodb:*"],
+        resources: ["*"]
+      }],
+    });
+    
+    api.route("DELETE /api/menu/{id}", { 
+      handler: "functions/menu.handler",
+      environment: {
+        DYNAMODB_MENU_TABLE: process.env.DYNAMODB_MENU_TABLE_NAME!,
+      },
+      permissions: [{
+        actions: ["dynamodb:*"],
+        resources: ["*"]
+      }],
+    });
+    
+    api.route("GET /api/settings", { 
+      handler: "functions/settings.handler",
+      environment: {
+        PATH_PREFIX: process.env.PATH_PREFIX || "",
+      },
+      permissions: [{
+        actions: ["ssm:GetParameter", "ssm:PutParameter"],
+        resources: ["*"]
+      }],
+    });
+    
+    api.route("PUT /api/settings", { 
+      handler: "functions/settings.handler",
+      environment: {
+        PATH_PREFIX: process.env.PATH_PREFIX || "",
+      },
+      permissions: [{
+        actions: ["ssm:GetParameter", "ssm:PutParameter"],
+        resources: ["*"]
+      }],
+    });
+
+    // Create the NextJS site
+    const site = new sst.aws.Nextjs("RestaurantFrontend", {
+      environment: {
+        NEXT_PUBLIC_API_URL: api.url,
+      },
+      domain: process.env.DOMAIN_URL ? {
+        name: process.env.PATH_PREFIX?.substring(1) + "." + process.env.DOMAIN_URL,
+        aliases: ["www." + process.env.PATH_PREFIX?.substring(1) + "." + process.env.DOMAIN_URL],
+        dns: sst.aws.dns({
+          zone: process.env.HOSTED_ZONE
+        })
+      } : undefined,
+    });
+
+    // Return outputs
+    return {
+      ApiEndpoint: api.url,
+      CloudFrontURL: site.url,
+      SiteURL: process.env.PATH_PREFIX?.substring(1) + "." + process.env.DOMAIN_URL
+    };
   },
-};
+});
