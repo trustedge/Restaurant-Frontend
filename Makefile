@@ -1,4 +1,6 @@
-.PHONY: install dev build start clean
+.PHONY: install dev build clean sst-dev sst-deploy sst-deploy-prod sst-remove sst-remove-prod ssm
+
+include ../.env
 
 # Install dependencies
 install:
@@ -11,10 +13,6 @@ dev:
 # Build for production
 build:
 	npm run build
-
-# Start production server
-start:
-	npm run start
 
 # Clean build artifacts and dependencies
 clean:
@@ -33,38 +31,36 @@ lint:
 # Install and start development server
 setup: install dev
 
-buildAWS:
-	docker build --platform linux/amd64 --debug --progress=plain -t restaurant-frontend:latest .
-	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 170399736289.dkr.ecr.us-east-1.amazonaws.com
-	docker tag restaurant-frontend:latest 170399736289.dkr.ecr.us-east-1.amazonaws.com/restaurant-frontend:latest
-	docker push 170399736289.dkr.ecr.us-east-1.amazonaws.com/restaurant-frontend:latest
+# SST development
+sst-dev:
+	npm run sst:dev
 
-# docker-run:
-# 	docker run -p 3000:3000 restaurant-frontend
-docker-build:
-	docker build --debug --progress=plain -t restaurant-frontend .
+# SST build
+sst-build:
+	npm run sst:build
 
-docker-run2:
-	docker run -p 3000:3000 \
-	-e PATH_PREFIX=/sushi-dynasty \
-	-e DYNAMODB_ORDER_TABLE_NAME=development-Sushi-Dynasty-orderTable \
-	restaurant-frontend
+# SST deploy (development)
+sst-deploy:
+	npm run sst:deploy
 
-docker-run:
-	docker run -p 3000:3000 \
-	-e NEXT_PUBLIC_DEV_MODE=false \
-	-e AWS_ACCESS_KEY_ID=AKIASPLE5UHQ2HDRTQ5L \
-	-e AWS_SECRET_ACCESS_KEY=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 \
-	-e AWS_REGION=us-east-1 \
-	-e PATH_PREFIX=/sushi-dynasty \
-	-e DYNAMODB_ORDER_TABLE_NAME=development-Sushi-Dynasty-orderTable \
-	restaurant-frontend
+# SST deploy (production)
+sst-deploy-prod:
+	npm run sst:deploy:prod
 
-SSM:
-	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_NAME" --value "Sushi Dynasty" --type "String"
-	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_DESCRIPTION" --value "Sushi Dynasty offers authentic Japanese cuisine with the finest and freshest ingredients!" --type "String"
-	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_ADDRESS" --value "456 Sakura Ave" --type "String"
-	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_HOURS" --value "9AM-10PM" --type "String"
-	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_EMAIL" --value "info@sushidynasty.com" --type "String"
-	aws ssm put-parameter --name "/sushi-dynasty/RESTAURANT_SUPPORT_PHONE" --value "+1234567890" --type "String"
-	aws ssm put-parameter --name "/sushi-dynasty/PHONE_AGENT_INSTRUCTION" --value file://./reference/instructions.data --type "String"
+# SST remove (development)
+sst-remove:
+	npm run sst:remove
+
+# SST remove (production)
+sst-remove-prod:
+	npm run sst:remove:prod
+
+# Setup SSM parameters
+ssm:
+	aws ssm put-parameter --name "$(PATH_PREFIX)/RESTAURANT_NAME" --value "Johnny's Dining" --type "String"
+	aws ssm put-parameter --name "$(PATH_PREFIX)/RESTAURANT_DESCRIPTION" --value "Johnny's Dining offers classic American cuisine with the finest and freshest ingredients!" --type "String"
+	aws ssm put-parameter --name "$(PATH_PREFIX)/RESTAURANT_ADDRESS" --value "123 Main Street" --type "String"
+	aws ssm put-parameter --name "$(PATH_PREFIX)/RESTAURANT_HOURS" --value "11AM-10PM" --type "String"
+	aws ssm put-parameter --name "$(PATH_PREFIX)/RESTAURANT_EMAIL" --value "info@johnnysdinning.com" --type "String"
+	aws ssm put-parameter --name "$(PATH_PREFIX)/RESTAURANT_SUPPORT_PHONE" --value "+1234567890" --type "String"
+	aws ssm put-parameter --name "$(PATH_PREFIX)/PHONE_AGENT_INSTRUCTION" --value file://../references/instructions.data --type "String"

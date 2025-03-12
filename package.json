@@ -5,7 +5,6 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
-		"start": "NODE_OPTIONS='--inspect' next start",
 		"lint": "next lint",
 		"type-check": "tsc --noEmit",
 		"sst:dev": "sst dev",

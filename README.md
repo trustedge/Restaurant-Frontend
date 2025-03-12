@@ -45,6 +45,7 @@ A comprehensive restaurant management system designed for restaurant kiosks, ena
 ### Prerequisites
 - Node.js (v14 or higher)
 - npm (v6 or higher)
+- [Restaurant-Infra](https://github.com/trustedge/Restaurant-Infra) - Required for AWS infrastructure setup
 
 ### Installation
 
@@ -163,65 +164,51 @@ app/
 └── settings/        # Restaurant settings
 ```
 
-## Production Deployment
+## Production Deployment with SST v3
 
-### Building for Production
+This project uses SST (Serverless Stack) v3 for AWS deployment, providing a fully serverless architecture.
 
-1. Build the application:
-```bash
-npm run build
-```
+1. **Prerequisites**:
+   - Set up the [Restaurant-Infra](https://github.com/trustedge/Restaurant-Infra) repository first
+   - AWS CLI configured with appropriate credentials
+   - SST v3 installed (`npm install -g sst@3`)
 
-2. Start the production server:
-```bash
-npm start
-```
-
-### Deployment Options
-
-1. **Vercel (Recommended)**
-   - Connect your GitHub repository to Vercel
-   - Vercel will automatically build and deploy your application
-   - Set up environment variables in Vercel dashboard
+2. **Deployment Commands**:
    ```bash
-   # Deploy to Vercel
-   vercel
-   ```
-
-2. **Traditional Server**
-   - Install Node.js on your server
-   - Clone the repository
-   - Install dependencies: `npm install`
-   - Build: `npm run build`
-   - Start: `npm start`
-   - Use process manager (PM2) for reliability:
-   ```bash
-   # Install PM2
-   npm install -g pm2
+   # Development deployment
+   npm run sst:deploy
    
-   # Start the application
-   pm2 start npm --name "restaurant-app" -- start
+   # Production deployment
+   npm run sst:deploy:prod
+   ```
+
+3. **Removing Deployed Resources**:
+   ```bash
+   # Remove development deployment
+   npm run sst:remove
    
-   # Monitor the application
-   pm2 monitor
+   # Remove production deployment
+   npm run sst:remove:prod
    ```
 
-3. **Docker Deployment**
-   - Build the Docker image:
+4. **Local Development with SST**:
    ```bash
-   docker build -t restaurant-app .
-   ```
-   - Run the container:
-   ```bash
-   docker run -p 3000:3000 restaurant-app
+   npm run sst:dev
    ```
 
-### Production Considerations
+### Serverless Deployment Considerations
 
-1. **Environment Variables and AWS Configuration**
+1. **SST and AWS Configuration**
+   - The `sst.config.ts` file defines the AWS resources used by the application
+   - The application uses API Gateway, Lambda, DynamoDB, and CloudFront
+   - SST automatically handles IAM permissions and resource provisioning
+   - Environment variables are configured in the SST config and .env files
+   - Make sure the Restaurant-Infra repository is set up first to create required DynamoDB tables
+
+2. **Environment Variables and AWS Configuration**
    - Set up proper environment variables for production
-   - Configure NEXT_PUBLIC_PATH_PREFIX for your production environment
-   - In AWS Fargate, the application will use IAM roles instead of access keys
+   - Configure PATH_PREFIX for your production environment
+   - SST will use IAM roles instead of access keys
    - Ensure IAM roles have proper permissions for SSM Parameter Store:
      ```json
      {
@@ -240,24 +227,18 @@ npm start
      ```
    - Use different parameter paths for different environments (e.g., /prod/restaurant-name, /staging/restaurant-name)
    - Store sensitive information securely in SSM Parameter Store
-   - Use different API endpoints for production
 
-2. **Security**
+3. **Security**
    - Change the default admin password (`1234`)
    - Implement proper authentication system
    - Set up SSL/TLS certificates
    - Configure security headers
 
-3. **Performance**
-   - Enable caching
-   - Optimize images and assets
-   - Monitor application performance
-   - Set up error tracking
-
-4. **Backup**
-   - Implement regular database backups
-   - Store backups securely
-   - Test backup restoration process
+4. **Monitoring and Maintenance**
+   - Use AWS CloudWatch for monitoring Lambda functions and API Gateway
+   - Set up alarms for error rates and performance issues
+   - Regularly update SST and dependencies
+   - Monitor AWS costs
 
 ## Security Note
 
